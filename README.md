@@ -1,117 +1,76 @@
-# Flappy Beat Drop
+<div align="center">
+  <img src="assets/cover.svg" alt="Flappy Beat Drop — neon rhythm arcade" width="100%">
+  <h1>Flappy Beat Drop</h1>
+  <p><strong>Flap. Dodge. Drop the beat.</strong></p>
+  <p>A neon rhythm-inspired arcade game made for quick browser sessions on desktop and mobile.</p>
+  <p>
+    <a href="https://golden-elf-10a0d8.netlify.app/"><strong>▶ Play the live demo</strong></a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/khan018134/flappy-beat-drop">View source</a>
+  </p>
+</div>
 
-A neon-soaked, rhythm-inspired arcade game built with HTML, CSS, and JavaScript. Leap through glowing speaker stacks, collect power-ups, chain combos, and push your score higher with every run.
+## About
 
-## Live Demo
+Take control of a musical character and weave through glowing speaker stacks. Collect vinyl, build score combos, and use power-ups to keep your run alive. The game is a lightweight static site built with vanilla JavaScript and the Canvas API—no install or build step required.
 
-- Web demo: https://golden-elf-10a0d8.netlify.app/
-- GitHub repository: https://github.com/khan018134/flappy-beat-drop
+## Features
 
-## Overview
+- Three character skins: MC Mic, Boombox, and Grillz
+- Responsive canvas rendering with neon city-inspired visuals
+- Endless obstacle course with gradually increasing challenge
+- Combo scoring with multipliers up to 4×
+- Vinyl bonus pickups, protective Shield, and temporary Slow-Mo
+- Synthesized sound effects using the Web Audio API, with a mute toggle
+- Personal best saved locally in the browser
+- Pause and resume, including automatic pause when the page is hidden
+- Mobile touch, desktop click, and keyboard controls
 
-Flappy Beat Drop takes the classic endless flapper formula and gives it a fresh hip-hop arcade identity. The player dodges obstacles, collects bonus pickups, and battles increasing speed while trying to set a new high score.
+## How to play
 
-The project is intentionally lightweight, self-contained, and mobile-friendly so it can run instantly in a browser without any setup or build tools.
+| Action | Control |
+| --- | --- |
+| Flap / start | Tap or click the game canvas; press **Space** on desktop |
+| Pause / resume | **Esc** or **P**, or use the pause button |
+| Toggle sound | Use the sound button in the header |
 
-## Key Features
+Fly through each speaker gap without hitting an obstacle or the stage boundary. Clearing obstacles builds your combo; pickups add points or temporary abilities.
 
-- Three selectable characters: MC Mic, Boombox, and Grillz
-- Endless arcade gameplay with tap-to-fly mechanics
-- Neon visual style with animated backgrounds and glowing effects
-- Speaker-stack obstacle design inspired by music gear and DJ culture
-- Combo scoring with multipliers up to 4x
-- Power-ups:
-  - Vinyl (+5 points)
-  - Shield (temporary protection)
-  - Slow-Mo (reduces pace temporarily)
-- Local high-score saving through browser storage
-- Responsive controls for mobile and desktop use
-- Web Audio API-generated sounds and rhythmic beat loop
+## Run locally
 
-## Gameplay
-
-- Tap the screen or press Space to flap upward.
-- Avoid collisions with obstacles and the screen bounds.
-- Pass through gaps to earn score.
-- Build score chains by continuously clearing obstacles.
-- Grab pickups to increase score and gain advantages.
-- Survive as long as possible and beat your best run.
-
-## Controls
-
-### Mobile
-- Tap anywhere on the screen to flap.
-
-### Desktop
-- Click the game area to flap.
-- Press the Space key to jump.
-
-### Audio
-- Use the SOUND ON / SOUND OFF toggle in the top-right header.
-
-## Character Skins
-
-- MC Mic: slick microphone performer look
-- Boombox: retro street-audio energy
-- Grillz: flashy golden, high-impact style
-
-## Local Run
-
-No build process is required.
-
-1. Clone or download the repository.
-2. Open `index.html` directly in a browser, or serve the folder locally.
-3. Optional local web server:
+No dependencies or build tools are needed. Open `index.html` in a modern browser, or serve the project folder locally:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then open:
+Then visit <http://localhost:8000>.
 
-```text
-http://localhost:8000
-```
+## Deploy
 
-## Deployment
+This is a static website. Deploy the repository root with GitHub Pages, Netlify, Vercel, or another static host. The site entry point is `index.html`.
 
-This is a static web project and works with standard hosting providers such as:
+The game itself has no runtime package dependencies. Google Fonts is loaded remotely for typography; the game remains playable if that request is unavailable. Sound is generated in the browser and may require a user gesture before it starts.
 
-- GitHub Pages
-- Netlify
-- Vercel
-- Firebase Hosting
+## Built with
 
-The entry point is `index.html`, so it can load correctly from a root URL or a static site root.
-
-## Technology Stack
-
-- HTML5
-- CSS3
-- JavaScript
-- Canvas API
-- Tailwind CSS CDN
-- Font Awesome
-- Google Fonts
+- HTML5 and CSS
+- Vanilla JavaScript and Canvas API
 - Web Audio API
+- Google Fonts (Space Grotesk and DM Mono)
 
-## Project Structure
+## Project layout
 
 ```text
-flappy-beat-drop/
-├── index.html
+.
+├── assets/
+│   └── cover.svg     # Repository banner artwork
+├── favicon.svg       # Browser tab icon
+├── index.html        # Game, styles, and logic
 ├── README.md
-├── .gitignore
-├── LICENSE
-└── assets/
+└── .gitignore
 ```
-
-## Notes
-
-- The game uses external CDNs for styling and typography; an internet connection is needed for the full look.
-- High scores are saved locally in the browser via `localStorage`.
-- The project is intentionally lightweight and easy to customize.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+No license has been specified. All rights are reserved by default; please contact the repository owner before reusing or redistributing this project.
