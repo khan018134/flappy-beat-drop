@@ -1,53 +1,118 @@
 # Flappy Beat Drop
 
-A neon-soaked, rhythm-inspired arcade game built as a lightweight, single-page HTML experience. Take control of a musical character, flap through animated speaker stacks, collect power-ups, and chase a new high score.
+A vibrant, rhythm-inspired arcade game built with HTML, CSS, and JavaScript. Players control a stylized performer and navigate through neon speaker stacks, collect power-ups, build combos, and try to beat their personal high score.
 
-## Play
+This project is designed as a fast, mobile-friendly browser game with a hip-hop visual style, synthesized sound effects, and smooth single-file gameplay.
 
-**Live game:** [Play Flappy Beat Drop](https://golden-elf-10a0d8.netlify.app/)
+## Live Demo
+
+- Production demo: https://golden-elf-10a0d8.netlify.app/
+- GitHub repository: https://github.com/khan018134/flappy-beat-drop
+
+## Game Overview
+
+Flappy Beat Drop blends classic tap-to-fly mechanics with a modern music-themed arcade aesthetic. The player dodges obstacles, grabs power-ups, and steadily builds momentum as the pace and difficulty increase over time.
+
+The experience is intentionally lightweight so it can run instantly in the browser without installation or a build pipeline.
 
 ## Features
 
-- Three playable characters: MC Mic, Boombox, and Grillz.
-- Tap-to-fly arcade gameplay with keyboard support.
-- Animated speaker-stack obstacles and a neon, color-shifting stage.
-- Combo scoring with multipliers up to 4×.
-- Vinyl collectibles worth +5 points, plus Shield and Slow-Mo power-ups.
-- Synthesized sound effects and a looping beat, with a sound toggle.
-- High score saved locally in your browser.
-- Responsive layout designed for phones and desktop browsers.
+- Three selectable characters: MC Mic, Boombox, and Grillz
+- Tap-to-fly gameplay with mouse and keyboard support
+- Neon city-night visual style with glowing effects and animated backgrounds
+- Dynamic obstacle generation with speaker-stack style pipes
+- Score combo system with multipliers up to 4x
+- Collectible power-ups:
+  - Vinyl (+5 points)
+  - Shield (protective aura)
+  - Slow-Mo (temporary speed reduction)
+- Local high-score saving using browser storage
+- Responsive layout for mobile and desktop screens
+- Web Audio API synth effects for jump, scoring, bass hits, and power-ups
+
+## Gameplay Mechanics
+
+- Start the round from the menu screen.
+- Tap or press Space to flap upward.
+- Avoid colliding with the top or bottom boundaries and the speaker obstacles.
+- Pass through gaps to score and build combo chains.
+- Collect pickups to gain points and unlock tactical advantages.
+- Survive as long as possible and beat your best recorded score.
 
 ## Controls
 
-- **Mobile:** Tap the screen to flap.
-- **Desktop:** Click or press **Space** to flap.
-- Use the skin cards to choose a character before playing. Toggle audio from the header.
+### Mobile
+- Tap anywhere on the screen to flap.
 
-## Run locally
+### Desktop
+- Click the game area to flap.
+- Press the Space key to jump.
 
-No build step or package installation is required. Download or clone the repository, then open `index.html` in a modern browser. For local hosting, you can also run a simple static server from the project directory, for example:
+### Audio
+- Use the SOUND ON / SOUND OFF toggle in the top-right of the game header.
+
+## Character Skins
+
+- MC Mic: clean and focused performer look
+- Boombox: bold retro street sound aesthetic
+- Grillz: flashy golden, high-energy character style
+
+## Local Development
+
+No build step is required.
+
+1. Clone the repository.
+2. Open `index.html` directly in your browser, or run a local static server.
+3. For a simple local server:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit [http://localhost:8000](http://localhost:8000).
-
-## Deploy
-
-This is a static website. It can be deployed with GitHub Pages, Netlify, or another static hosting provider. The entry point is `index.html`, so the game loads from the site's root URL.
-
-The page loads Tailwind CSS, Font Awesome, and Google Fonts from their respective CDNs, so an internet connection is needed for those external assets. The game itself is implemented with HTML, CSS, Canvas, and vanilla JavaScript; audio is generated with the Web Audio API.
-
-## Project structure
+Then visit:
 
 ```text
-.
-├── index.html    # Game, styles, and client-side logic
-├── README.md     # Project overview and usage
-└── .gitignore    # Common local/editor files excluded from Git
+http://localhost:8000
 ```
+
+## Deployment
+
+This is a static website and can be deployed on any hosting platform that supports HTML/CSS/JS.
+
+### Recommended options
+- GitHub Pages
+- Netlify
+- Vercel
+- Firebase Hosting
+
+Because the project uses `index.html` as the main entry file, it will work correctly on a root URL deployment.
+
+## Project Structure
+
+```text
+flappy-beat-drop/
+├── index.html
+├── README.md
+├── LICENSE
+├── .gitignore
+└── assets/ (optional future content, art, or screenshots)
+```
+
+## Tech Stack
+
+- HTML5
+- CSS3
+- JavaScript (Canvas API)
+- Tailwind CSS CDN
+- Font Awesome CDN
+- Google Fonts
+- Web Audio API
+
+## Notes
+
+- The game uses external CDN assets for styling and iconography, so an internet connection is needed for the full visual experience.
+- The saved high score is stored locally in the browser via `localStorage`.
 
 ## License
 
-No license has been specified yet. Unless a license is added, standard copyright applies and reuse is not automatically granted.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
