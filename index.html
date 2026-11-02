@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0b0914">
+    <meta name="description" content="Flappy Beat Drop is a neon-soaked, rhythm-inspired arcade game. Tap to fly, dodge speaker stacks, collect power-ups, and beat your high score.">
+    <title>Flappy Beat Drop — Hip Hop Arcade</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #0b0914;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .font-graffiti {
+            font-family: 'Permanent Marker', cursive;
+        }
+
+        .font-retro {
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .glow-pink { text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f; }
+        .glow-cyan { text-shadow: 0 0 10px #00f3ff, 0 0 20px #00f3ff; }
+        .glow-yellow { text-shadow: 0 0 10px #ffe600, 0 0 20px #ffe600; }
+        .box-glow-pink { box-shadow: 0 0 15px rgba(255, 0, 127, 0.5); }
+        .box-glow-cyan { box-shadow: 0 0 15px rgba(0, 243, 255, 0.5); }
+
+        .skin-card {
+            border: 2px solid #334155;
+            transition: all 0.2s ease;
+        }
+
+        .skin-card.selected {
+            border-color: #ff007f;
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
+            background-color: rgba(255, 0, 127, 0.15);
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shake-screen {
+            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between items-center bg-slate-950 select-none overflow-hidden relative">
+    <!-- Game header -->
+    <header class="w-full max-w-md p-3 flex justify-between items-center z-10 bg-slate-900/80 backdrop-blur-md border-b border-pink-500/30">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-microphone-lines text-pink-500 text-2xl animate-pulse" aria-hidden="true"></i>
+            <h1 class="font-graffiti text-2xl text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400">BEAT DROP</h1>
+        </div>
+        <button id="audio-toggle" type="button" aria-label="Toggle sound" class="px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-cyan-400 hover:text-white flex items-center gap-2 text-xs font-bold transition-all active:scale-95">
+            <i id="audio-icon" class="fa-solid fa-volume-high" aria-hidden="true"></i>
+            <span id="audio-text">SOUND ON</span>
+        </button>
+    </header>
+
+    <!-- Game canvas and overlays -->
+    <main id="game-container" class="relative w-full max-w-md flex-1 flex justify-center items-center overflow-hidden">
+        <canvas id="gameCanvas" class="w-full h-full block bg-slate-950" aria-label="Flappy Beat Drop game canvas"></canvas>
+
+        <div id="start-overlay" class="absolute inset-0 flex flex-col justify-between items-center bg-slate-950/90 backdrop-blur-md p-5 text-center z-20 overflow-y-auto">
+            <div class="mt-2">
+                <div class="mb-2 text-pink-500 animate-bounce flex justify-center" aria-hidden="true">
+                    <i class="fa-solid fa-compact-disc text-5xl text-cyan-400"></i>
+                </div>
+                <h2 class="font-graffiti text-3xl text-yellow-400 glow-yellow mb-1">FLAPPY BEAT DROP</h2>
+                <p class="text-xs text-cyan-300 font-mono tracking-wide uppercase">Select Skin &amp; Drop The Beat</p>
+            </div>
+
+            <div class="w-full my-3">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Choose your MC</p>
+                <div class="grid grid-cols-3 gap-2 w-full max-w-xs mx-auto">
+                    <button type="button" data-skin="mic" aria-pressed="true" class="skin-card selected p-2 rounded-xl bg-slate-900 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-microphone text-2xl text-pink-400 mb-1" aria-hidden="true"></i>
+                        <span class="text-[10px] font-bold text-slate-200">MC MIC</span>
+                    </button>
+                    <button type="button" data-skin="boombox" aria-pressed="false" class="skin-card p-2 rounded-xl bg-slate-900 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-radio text-2xl text-cyan-400 mb-1" aria-hidden="true"></i>
+                        <span class="text-[10px] font-bold text-slate-200">BOOMBOX</span>
+                    </button>
+                    <button type="button" data-skin="grillz" aria-pressed="false" class="skin-card p-2 rounded-xl bg-slate-900 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-record-vinyl text-2xl text-yellow-400 mb-1" aria-hidden="true"></i>
+                        <span class="text-[10px] font-bold text-slate-200">GRILLZ</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3 w-full max-w-xs mb-2">
+                <button id="start-btn" type="button" class="w-full py-3.5 rounded-xl font-retro text-xs bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold tracking-wider uppercase box-glow-pink hover:opacity-90 active:scale-95 transition-all">Tap to play</button>
+            </div>
+
+            <div class="flex items-center justify-center gap-4 text-[11px] text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 w-full max-w-xs">
+                <span class="flex items-center gap-1"><i class="fa-solid fa-shield-halved text-cyan-400" aria-hidden="true"></i> SHIELDS</span>
+                <span class="text-slate-600">•</span>
+                <span class="flex items-center gap-1"><i class="fa-solid fa-compact-disc text-yellow-400" aria-hidden="true"></i> +5 VINYL</span>
+                <span class="text-slate-600">•</span>
+                <span class="flex items-center gap-1"><i class="fa-solid fa-clock text-purple-400" aria-hidden="true"></i> SLOW-MO</span>
+            </div>
+        </div>
+
+        <div id="gameover-overlay" class="hidden absolute inset-0 flex flex-col justify-center items-center bg-slate-950/90 backdrop-blur-md p-6 text-center z-30">
+            <div class="bg-slate-900 border-2 border-pink-500/50 rounded-2xl p-6 w-full max-w-xs shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-8 -top-8 w-24 h-24 bg-pink-500/10 rounded-full blur-xl" aria-hidden="true"></div>
+                <h3 class="font-graffiti text-4xl text-pink-500 glow-pink mb-1">RECORD SCRATCH!</h3>
+                <p class="text-xs text-slate-400 font-mono uppercase mb-6">Game over</p>
+
+                <div class="bg-slate-950/80 rounded-xl p-4 mb-6 border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-400 uppercase font-bold">Score</span>
+                        <span id="final-score" class="font-retro text-lg text-cyan-400">0</span>
+                    </div>
+                    <div class="w-full h-px bg-slate-800"></div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-slate-400 uppercase font-bold">Best record</span>
+                        <span id="high-score" class="font-retro text-lg text-yellow-400">0</span>
+                    </div>
+                </div>
+
+                <button id="restart-btn" type="button" class="w-full py-3.5 rounded-xl font-retro text-xs bg-gradient-to-r from-cyan-400 to-blue-600 text-slate-950 font-black tracking-wider uppercase box-glow-cyan hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Remix / Replay
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-md p-2 bg-slate-900 border-t border-slate-800 text-center z-10">
+        <p class="text-[10px] text-slate-500 font-mono tracking-widest uppercase">Made for mobile • Hip-Hop Arcade</p>
+    </footer>
+
+    <script>
+        // Web Audio API synth engine
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+                this.isBgmPlaying = false;
+                this.bgmInterval = null;
+                this.beatStep = 0;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) this.ctx = new AudioContext();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            }
+
+            toggleSound() {
+                this.muted = !this.muted;
+                return !this.muted;
+            }
+
+            playJump() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.12);
+                } catch (e) {}
+            }
+
+            playScore() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+                } catch (e) {}
+            }
+
+            playBassDrop() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.35);
+                    gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.35);
+                } catch (e) {}
+            }
+
+            playPowerup() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(800, this.ctx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.25);
+                } catch (e) {}
+            }
+
+            playHit() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const bufferSize = this.ctx.sampleRate * 0.15;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+                    const whiteNoise = this.ctx.createBufferSource();
+                    whiteNoise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    filter.Q.setValueAtTime(3, this.ctx.currentTime);
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                    whiteNoise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+                    whiteNoise.start();
+                } catch (e) {}
+            }
+
+            startBgm() {
+                if (this.isBgmPlaying) return;
+                this.isBgmPlaying = true;
+                this.beatStep = 0;
+                const tempo = 95;
+                const stepTime = (60 / tempo) / 4 * 1000;
+
+                this.bgmInterval = setInterval(() => {
+                    if (this.muted || !this.ctx) return;
+                    const step = this.beatStep % 16;
+                    const now = this.ctx.currentTime;
+
+                    if (step === 0 || step === 7 || step === 10) {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.frequency.setValueAtTime(120, now);
+                        osc.frequency.exponentialRampToValueAtTime(0.01, now + 0.15);
+                        gain.gain.setValueAtTime(0.5, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                        osc.connect(gain); gain.connect(this.ctx.destination);
+                        osc.start(now); osc.stop(now + 0.15);
+                    }
+
+                    if (step === 4 || step === 12) {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(250, now);
+                        osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.connect(gain); gain.connect(this.ctx.destination);
+                        osc.start(now); osc.stop(now + 0.1);
+                    }
+
+                    if (step % 2 === 0) {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'highpass';
+                        osc.frequency.setValueAtTime(7000, now);
+                        gain.gain.setValueAtTime(step % 4 === 2 ? 0.08 : 0.04, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                        osc.connect(gain); gain.connect(this.ctx.destination);
+                        osc.start(now); osc.stop(now + 0.05);
+                    }
+                    this.beatStep++;
+                }, stepTime);
+            }
+
+            stopBgm() {
+                if (this.bgmInterval) {
+                    clearInterval(this.bgmInterval);
+                    this.bgmInterval = null;
+                }
+                this.isBgmPlaying = false;
+            }
+        }
+
+        const audio = new SoundEngine();
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('game-container');
+        const startOverlay = document.getElementById('start-overlay');
+        const gameoverOverlay = document.getElementById('gameover-overlay');
+        const finalScoreEl = document.getElementById('final-score');
+        const highScoreEl = document.getElementById('high-score');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const audioToggle = document.getElementById('audio-toggle');
+        const audioIcon = document.getElementById('audio-icon');
+        const audioText = document.getElementById('audio-text');
+        const skinCards = document.querySelectorAll('.skin-card');
+
+        let width = 0;
+        let height = 0;
+        let selectedSkin = 'mic';
+
+        skinCards.forEach(card => {
+            card.addEventListener('click', e => {
+                e.stopPropagation();
+                skinCards.forEach(item => {
+                    item.classList.remove('selected');
+                    item.setAttribute('aria-pressed', 'false');
+                });
+                card.classList.add('selected');
+                card.setAttribute('aria-pressed', 'true');
+                selectedSkin = card.dataset.skin;
+            });
+        });
+
+        function resizeCanvas() {
+            width = container.clientWidth;
+            height = container.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let gameState = 'START';
+        let score = 0;
+        let combo = 0;
+        let multiplier = 1;
+        let highScore = parseInt(localStorage.getItem('flappy_beat_highscore') || '0', 10);
+        let frameCount = 0;
+
+        const player = {
+            x: 60, y: 0, radius: 18, velocity: 0, gravity: 0.45,
+            jumpStrength: -7.8, rotation: 0, hasShield: false, slowMoTimer: 0
+        };
+
+        let obstacles = [];
+        let collectibles = [];
+        let particles = [];
+        let floatingTexts = [];
+        let backgroundNotes = [];
+
+        function initBackgroundNotes() {
+            backgroundNotes = [];
+            for (let i = 0; i < 12; i++) {
+                backgroundNotes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: 14 + Math.random() * 16,
+                    speedY: 0.3 + Math.random() * 0.7,
+                    opacity: 0.1 + Math.random() * 0.25,
+                    symbol: ['♪', '♫', '♩', '♬'][Math.floor(Math.random() * 4)]
+                });
+            }
+        }
+
+        function handleTap(e) {
+            if (e && e.target.closest('button')) return;
+            audio.init();
+            if (gameState === 'START') {
+                startGame();
+            } else if (gameState === 'PLAYING') {
+                player.velocity = player.jumpStrength;
+                audio.playJump();
+                createJumpParticles();
+            }
+        }
+
+        window.addEventListener('touchstart', e => {
+            if (gameState === 'PLAYING') e.preventDefault();
+            handleTap(e);
+        }, { passive: false });
+        window.addEventListener('mousedown', e => {
+            if (e.button === 0) handleTap(e);
+        });
+        window.addEventListener('keydown', e => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                handleTap();
+            }
+        });
+
+        startBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            audio.init();
+            startGame();
+        });
+        restartBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            audio.init();
+            startGame();
+        });
+        audioToggle.addEventListener('click', e => {
+            e.stopPropagation();
+            const soundOn = audio.toggleSound();
+            audioIcon.className = soundOn ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+            audioText.textContent = soundOn ? 'SOUND ON' : 'SOUND OFF';
+            if (soundOn) audio.init();
+        });
+
+        function startGame() {
+            gameState = 'PLAYING';
+            score = 0;
+            combo = 0;
+            multiplier = 1;
+            frameCount = 0;
+            player.y = height / 2;
+            player.velocity = 0;
+            player.rotation = 0;
+            player.hasShield = false;
+            player.slowMoTimer = 0;
+            obstacles = [];
+            collectibles = [];
+            particles = [];
+            floatingTexts = [];
+            startOverlay.classList.add('hidden');
+            gameoverOverlay.classList.add('hidden');
+            audio.startBgm();
+            initBackgroundNotes();
+        }
+
+        function triggerGameOver() {
+            if (gameState === 'GAMEOVER') return;
+            gameState = 'GAMEOVER';
+            audio.playHit();
+            audio.stopBgm();
+            container.classList.add('shake-screen');
+            setTimeout(() => container.classList.remove('shake-screen'), 300);
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('flappy_beat_highscore', highScore.toString());
+            }
+            finalScoreEl.innerText = score;
+            highScoreEl.innerText = highScore;
+            setTimeout(() => gameoverOverlay.classList.remove('hidden'), 400);
+        }
+
+        function addFloatingText(text, x, y, color = '#ffe600') {
+            floatingTexts.push({ text, x, y, color, life: 1.0, vy: -1.5 });
+        }
+
+        function createJumpParticles() {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x: player.x - 10, y: player.y + 10,
+                    vx: -1 - Math.random() * 2, vy: (Math.random() - 0.5) * 3,
+                    radius: 3 + Math.random() * 3,
+                    color: Math.random() > 0.5 ? '#ff007f' : '#00f3ff', life: 1.0
+                });
+            }
+        }
+
+        function createBurstParticles(x, y, color, count = 12) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y, vx: (Math.random() - 0.5) * 7, vy: (Math.random() - 0.5) * 7,
+                    radius: 3 + Math.random() * 4, color, life: 1.0
+                });
+            }
+        }
+
+        function spawnObstacle() {
+            const gap = Math.max(120, 160 - Math.floor(score / 5) * 4);
+            const minHeight = 60;
+            const maxHeight = height - gap - minHeight - 60;
+            const topHeight = minHeight + Math.random() * (maxHeight - minHeight);
+            const obsX = width + 60;
+            obstacles.push({
+                x: obsX, width: 55, top: topHeight,
+                bottom: height - topHeight - gap, passed: false,
+                eqOffset: Math.random() * Math.PI * 2
+            });
+            if (Math.random() < 0.65) {
+                const types = ['vinyl', 'vinyl', 'shield', 'slowmo'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                collectibles.push({ x: obsX + 27, y: topHeight + gap / 2, type, radius: 12, pulse: 0 });
+            }
+        }
+
+        function update() {
+            frameCount++;
+            backgroundNotes.forEach(note => {
+                note.y -= note.speedY;
+                if (note.y < -20) {
+                    note.y = height + 20;
+                    note.x = Math.random() * width;
+                }
+            });
+            if (gameState !== 'PLAYING') return;
+            if (player.slowMoTimer > 0) player.slowMoTimer--;
+            const currentSpeed = (player.slowMoTimer > 0 ? 1.4 : 2.4) + Math.min(2.0, score * 0.04);
+            player.velocity += player.gravity;
+            player.y += player.velocity;
+            player.rotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, player.velocity * 0.08));
+
+            const spawnInterval = Math.max(75, 110 - Math.floor(score / 3) * 2);
+            if (frameCount % spawnInterval === 0) spawnObstacle();
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.x -= currentSpeed;
+                if (!obs.passed && obs.x + obs.width < player.x) {
+                    obs.passed = true;
+                    combo++;
+                    multiplier = combo >= 10 ? 4 : combo >= 6 ? 3 : combo >= 3 ? 2 : 1;
+                    score += multiplier;
+                    audio.playScore();
+                    audio.playBassDrop();
+                    createBurstParticles(player.x, player.y, '#ffe600', 8);
+                    if (multiplier > 1) addFloatingText(`${multiplier}x COMBO!`, player.x, player.y - 20, '#00f3ff');
+                }
+                if (obs.x + obs.width < -100) obstacles.splice(i, 1);
+            }
+
+            for (let i = collectibles.length - 1; i >= 0; i--) {
+                const c = collectibles[i];
+                c.x -= currentSpeed;
+                c.pulse += 0.08;
+                const dist = Math.hypot(player.x - c.x, player.y - c.y);
+                if (dist < player.radius + c.radius) {
+                    audio.playPowerup();
+                    if (c.type === 'vinyl') {
+                        score += 5;
+                        createBurstParticles(c.x, c.y, '#ffe600', 14);
+                        addFloatingText('+5 VINYL!', c.x, c.y, '#ffe600');
+                    } else if (c.type === 'shield') {
+                        player.hasShield = true;
+                        createBurstParticles(c.x, c.y, '#00f3ff', 14);
+                        addFloatingText('SHIELD UP!', c.x, c.y, '#00f3ff');
+                    } else if (c.type === 'slowmo') {
+                        player.slowMoTimer = 180;
+                        createBurstParticles(c.x, c.y, '#a855f7', 14);
+                        addFloatingText('SLOW-MO!', c.x, c.y, '#a855f7');
+                    }
+                    collectibles.splice(i, 1);
+                    continue;
+                }
+                if (c.x < -40) collectibles.splice(i, 1);
+            }
+
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y += ft.vy;
+                ft.life -= 0.025;
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.03;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            if (player.y + player.radius >= height - 20 || player.y - player.radius <= 0) triggerGameOver();
+            obstacles.forEach(obs => {
+                const inXRange = player.x + player.radius > obs.x && player.x - player.radius < obs.x + obs.width;
+                const inTopPipe = player.y - player.radius < obs.top;
+                const inBottomPipe = player.y + player.radius > height - obs.bottom;
+                if (inXRange && (inTopPipe || inBottomPipe)) {
+                    if (player.hasShield) {
+                        player.hasShield = false;
+                        obs.passed = true;
+                        audio.playHit();
+                        createBurstParticles(player.x, player.y, '#00f3ff', 20);
+                        addFloatingText('SHIELD BROKEN!', player.x, player.y, '#ff007f');
+                        player.velocity = -4;
+                    } else {
+                        triggerGameOver();
+                    }
+                }
+            });
+        }
+
+        function render() {
+            const stageHue = (score * 12) % 360;
+            ctx.fillStyle = gameState === 'PLAYING' ? `hsla(${stageHue}, 40%, 6%, 1)` : '#0b0914';
+            ctx.fillRect(0, 0, width, height);
+            drawGrid();
+            ctx.font = '20px sans-serif';
+            backgroundNotes.forEach(note => {
+                ctx.fillStyle = `rgba(0, 243, 255, ${note.opacity})`;
+                ctx.fillText(note.symbol, note.x, note.y);
+            });
+            obstacles.forEach(obs => {
+                drawSpeakerStack(obs.x, 0, obs.width, obs.top, true, obs.eqOffset);
+                drawSpeakerStack(obs.x, height - obs.bottom, obs.width, obs.bottom, false, obs.eqOffset);
+            });
+            collectibles.forEach(c => {
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                const scale = 1 + Math.sin(c.pulse) * 0.15;
+                ctx.scale(scale, scale);
+                if (c.type === 'vinyl') {
+                    ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffe600'; ctx.shadowColor = '#ffe600'; ctx.shadowBlur = 10; ctx.fill();
+                    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+                } else if (c.type === 'shield') {
+                    ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#00f3ff'; ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 10; ctx.fill();
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('S', 0, 3);
+                } else if (c.type === 'slowmo') {
+                    ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#a855f7'; ctx.shadowColor = '#a855f7'; ctx.shadowBlur = 10; ctx.fill();
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('⏱', 0, 3);
+                }
+                ctx.restore();
+            });
+            particles.forEach(p => {
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fill(); ctx.globalAlpha = 1.0;
+            });
+            drawSelectedPlayerSkin();
+            floatingTexts.forEach(ft => {
+                ctx.save(); ctx.font = 'bold 14px "Press Start 2P", monospace';
+                ctx.fillStyle = ft.color; ctx.globalAlpha = ft.life; ctx.fillText(ft.text, ft.x, ft.y); ctx.restore();
+            });
+            if (gameState === 'PLAYING') {
+                ctx.save(); ctx.font = 'bold 32px "Press Start 2P", monospace'; ctx.textAlign = 'center';
+                ctx.fillStyle = '#ff007f'; ctx.fillText(score.toString(), width / 2 + 2, 52);
+                ctx.fillStyle = '#00f3ff'; ctx.fillText(score.toString(), width / 2, 50);
+                if (multiplier > 1) {
+                    ctx.font = 'bold 12px "Press Start 2P", monospace';
+                    ctx.fillStyle = '#ffe600'; ctx.fillText(`${multiplier}x MULTIPLIER`, width / 2, 75);
+                }
+                ctx.restore();
+            }
+        }
+
+        function drawGrid() {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 0, 127, 0.08)';
+            ctx.lineWidth = 1;
+            const gridSize = 40;
+            for (let x = 0; x < width; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+            }
+            ctx.strokeStyle = '#ff007f'; ctx.lineWidth = 3;
+            ctx.shadowColor = '#ff007f'; ctx.shadowBlur = 10;
+            ctx.beginPath(); ctx.moveTo(0, height - 10); ctx.lineTo(width, height - 10); ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawSpeakerStack(x, y, w, h, isTop, eqOffset) {
+            ctx.save();
+            ctx.fillStyle = '#161329'; ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 2;
+            ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 6;
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, 6); ctx.fill(); ctx.stroke();
+            const numEqBars = 4;
+            const barWidth = 4;
+            const eqX = x + 6;
+            for (let b = 0; b < numEqBars; b++) {
+                const barH = h - 20;
+                if (barH <= 0) continue;
+                const pulse = Math.abs(Math.sin(frameCount * 0.12 + eqOffset + b));
+                const activeH = barH * pulse;
+                ctx.fillStyle = 'rgba(255, 230, 0, 0.2)';
+                ctx.fillRect(eqX + (b * 8), y + 10, barWidth, barH);
+                ctx.fillStyle = '#ffe600';
+                if (isTop) ctx.fillRect(eqX + (b * 8), y + 10 + (barH - activeH), barWidth, activeH);
+                else ctx.fillRect(eqX + (b * 8), y + 10, barWidth, activeH);
+            }
+            const speakerDiameter = 32;
+            const count = Math.floor((h - 20) / (speakerDiameter + 10));
+            for (let i = 0; i < count; i++) {
+                const speakerY = isTop ? y + h - 25 - (i * (speakerDiameter + 8)) : y + 25 + (i * (speakerDiameter + 8));
+                const centerX = x + w / 2 + 6;
+                ctx.beginPath(); ctx.arc(centerX, speakerY, speakerDiameter / 2, 0, Math.PI * 2);
+                ctx.fillStyle = '#0d0b18'; ctx.fill(); ctx.strokeStyle = '#ff007f'; ctx.lineWidth = 1.5; ctx.stroke();
+                const pulseScale = 1 + Math.sin(frameCount * 0.25 + eqOffset) * 0.15;
+                ctx.beginPath(); ctx.arc(centerX, speakerY, (speakerDiameter / 5) * pulseScale, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff007f'; ctx.shadowColor = '#ff007f'; ctx.shadowBlur = 8; ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawSelectedPlayerSkin() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.rotation);
+            if (player.hasShield) {
+                ctx.beginPath(); ctx.arc(0, 0, player.radius + 8, 0, Math.PI * 2);
+                ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 3;
+                ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 12; ctx.stroke();
+            }
+            if (selectedSkin === 'mic') {
+                ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 12; ctx.fillStyle = '#334155'; ctx.fillRect(-6, 2, 12, 22);
+                ctx.fillStyle = '#00f3ff'; ctx.fillRect(-6, 18, 12, 3);
+                ctx.beginPath(); ctx.arc(0, -6, 14, 0, Math.PI * 2); ctx.fillStyle = '#e2e8f0'; ctx.fill();
+                ctx.strokeStyle = '#ff007f'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.roundRect(-11, -10, 10, 7, 2); ctx.roundRect(1, -10, 10, 7, 2); ctx.fill();
+            } else if (selectedSkin === 'boombox') {
+                ctx.shadowColor = '#ff007f'; ctx.shadowBlur = 12; ctx.fillStyle = '#1e1b4b'; ctx.strokeStyle = '#ff007f'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.roundRect(-16, -12, 32, 24, 4); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#00f3ff'; ctx.beginPath(); ctx.arc(-8, 0, 6, 0, Math.PI * 2); ctx.arc(8, 0, 6, 0, Math.PI * 2); ctx.fill();
+            } else if (selectedSkin === 'grillz') {
+                ctx.shadowColor = '#ffe600'; ctx.shadowBlur = 14; ctx.fillStyle = '#ffe600';
+                ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(-10, -2, 20, 6);
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.strokeRect(-10, -2, 20, 6);
+            }
+            ctx.restore();
+        }
+
+        function loop() {
+            update();
+            render();
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('load', loop);
+    </script>
+</body>
+</html>
