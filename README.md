@@ -25,6 +25,14 @@ Take control of a musical character and weave through glowing speaker stacks. Co
 - Personal best saved locally in the browser
 - Pause and resume, including automatic pause when the page is hidden
 - Mobile touch, desktop click, and keyboard controls
+- Installable as a home-screen web app with offline game-shell caching
+
+## Play and install
+
+- **Play online:** [Flappy Beat Drop](https://golden-elf-10a0d8.netlify.app/)
+- **Install / prepare offline play:** [Open the install guide](https://golden-elf-10a0d8.netlify.app/install.html)
+
+Open the install guide over HTTPS while online. The service worker caches the game shell for offline use. On Android, use the browser's **Install app** option. On iPhone, open in Safari and choose **Share → Add to Home Screen**. Visit the game online once before going offline so its files are cached. Browser and platform install options vary.
 
 ## How to play
 
@@ -38,19 +46,19 @@ Fly through each speaker gap without hitting an obstacle or the stage boundary. 
 
 ## Run locally
 
-No dependencies or build tools are needed. Open `index.html` in a modern browser, or serve the project folder locally:
+No dependencies or build tools are needed. Open `index.html` in a modern browser for basic play. To test service-worker/offline behavior, serve the repository over localhost (service workers require HTTPS or localhost):
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit <http://localhost:8000>.
+Then visit <http://localhost:8000/install.html> to register the service worker and prepare the offline cache.
 
 ## Deploy
 
-This is a static website. Deploy the repository root with GitHub Pages, Netlify, Vercel, or another static host. The site entry point is `index.html`.
+This is a static website. Deploy the repository root with GitHub Pages, Netlify, Vercel, or another static host. The site entry point is `index.html`. After adding or changing these files, redeploy the repository so the live site serves `manifest.webmanifest`, `sw.js`, `install.html`, and the icons.
 
-The game itself has no runtime package dependencies. Google Fonts is loaded remotely for typography; the game remains playable if that request is unavailable. Sound is generated in the browser and may require a user gesture before it starts.
+The game has no runtime package dependencies. Some browsers may need a user gesture before synthesized sound starts. A first online visit is required to cache the game for offline use.
 
 ## Built with
 
@@ -58,17 +66,21 @@ The game itself has no runtime package dependencies. Google Fonts is loaded remo
 - Vanilla JavaScript and Canvas API
 - Web Audio API
 - Google Fonts (Space Grotesk and DM Mono)
+- Web App Manifest and Service Worker APIs
 
 ## Project layout
 
 ```text
 .
 ├── assets/
+│   ├── app-icon.svg  # Installable app icon
 │   └── cover.svg     # Repository banner artwork
-├── favicon.svg       # Browser tab icon
-├── index.html        # Game, styles, and logic
+├── favicon.svg
+├── index.html       # Game, styles, and logic
+├── install.html     # Mobile install and offline setup guide
+├── manifest.webmanifest
 ├── README.md
-└── .gitignore
+└── sw.js            # Offline app-shell caching
 ```
 
 ## License
